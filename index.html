@@ -4,12 +4,10 @@
   <meta charset="utf-8" />
   <title>AKSU — Купон / Kupon</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <!-- QR library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
   <style>
     :root{
-      --accent:#c42f2f;
+      --accent:#2f8f42; /* yashil rang (oldingi qizil o'rniga) */
       --dark:#222;
       --muted:#666;
       --card-bg:#fff;
@@ -36,7 +34,7 @@
       align-items:center;
       gap:12px;
       padding:18px;
-      background:linear-gradient(90deg, rgba(196,47,47,0.06), rgba(196,47,47,0.02));
+      background:linear-gradient(90deg, rgba(47,143,66,0.06), rgba(47,143,66,0.02));
     }
     .logo {
       width:58px;height:58px;border-radius:6px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:18px;
@@ -55,7 +53,7 @@
     .bullets{margin:0;padding:0 0 0 18px;color:var(--dark);font-size:13px;line-height:1.45;}
     .muted{color:var(--muted);font-size:12px;}
 
-    /* QR & contacts */
+    /* Bottom (QR removed) */
     .bottom{
       display:flex;
       gap:16px;
@@ -63,9 +61,8 @@
       padding:16px;
       border-top:1px dashed rgba(0,0,0,0.06);
       justify-content:space-between;
+      background: #fff;
     }
-    .qr-wrap{display:flex;gap:10px;align-items:center;}
-    canvas#qr{width:92px;height:92px;background:white;border-radius:6px;padding:8px;box-shadow:0 2px 6px rgba(0,0,0,0.03);}
     .contacts{font-size:13px;color:var(--muted);line-height:1.3;}
     .contacts a{color:var(--dark);text-decoration:none}
 
@@ -84,6 +81,7 @@
     /* Responsive */
     @media (max-width:420px){
       .coupon{max-width:360px}
+      .bottom{flex-direction:column;align-items:flex-start;gap:8px}
     }
   </style>
 </head>
@@ -183,17 +181,15 @@
     </div>
 
     <div class="bottom">
-      <div class="qr-wrap">
-        <canvas id="qr"></canvas>
-        <div class="muted" style="max-width:180px;font-size:12px">
-          <strong id="qr-label">Покажите QR на кассе</strong><br>
-          <span id="qr-sub" class="muted">Купон автоматически будет погашен после применения</span>
-        </div>
-      </div>
-
-      <div class="contacts">
+      <div class="contacts" style="max-width:70%;">
         <div style="font-weight:700;color:var(--accent)">AKSU</div>
         <div class="muted">Call-центр: <a href="tel:+998950373322">+998 95 037 33 22</a></div>
+        <div class="muted" style="margin-top:6px;font-size:12px">Kuponni kassaga ko‘rsating. Chegirma qo‘llangach, kupon bekor qilinadi.</div>
+      </div>
+
+      <div style="text-align:right;font-size:12px;color:var(--muted);max-width:40%;">
+        <div style="font-weight:700;color:var(--accent)">AKSU</div>
+        <div>Call-центр: <a href="tel:+998950373322">+998 95 037 33 22</a></div>
       </div>
     </div>
   </div>
@@ -206,57 +202,14 @@
       document.getElementById('tab-ru').classList.toggle('active', code === 'ru');
       document.getElementById('tab-uz').classList.toggle('active', code === 'uz');
 
-      // Update header text and QR label for accessibility
+      // Update header text for accessibility
       if(code === 'ru'){
         document.getElementById('header-title').textContent = 'Добро пожаловать в рестораны AKSU!';
         document.getElementById('header-sub').textContent = 'Скидка 20% — купон действует до 31.01.2026';
-        document.getElementById('qr-label').textContent = 'Покажите QR на кассе';
-        document.getElementById('qr-sub').textContent = 'Купон автоматически будет погашен после применения';
       } else {
         document.getElementById('header-title').textContent = "AKSU restoranlariga xush kelibsiz!";
         document.getElementById('header-sub').textContent = "20% chegirma — kupon 31.01.2026 gacha amal qiladi";
-        document.getElementById('qr-label').textContent = "Kuponni kassaga ko'rsating";
-        document.getElementById('qr-sub').textContent = "Chegirma qo‘llangach, kupon bekor qilinadi";
       }
-
-      // Regenerate QR with language-specific text
-      generateQR(code);
-    }
-
-    // Prepare vCard-like or plain text content for QR (you can customise)
-    function getQRText(lang){
-      if(lang === 'ru'){
-        return [
-          'AKSU Coupon',
-          'Скидка: 20%',
-          'Действует до: 31.01.2026',
-          'Не действует для доставки',
-          'Call: +998950373322'
-        ].join('\\n');
-      } else {
-        return [
-          'AKSU Kupon',
-          'Chegirma: 20%',
-          "Amal qilish muddati: 31.01.2026",
-          "Yetkazib berishlarga taalluqli emas",
-          'Call: +998950373322'
-        ].join('\\n');
-      }
-    }
-
-    // Initialize QR
-    const qr = new QRious({
-      element: document.getElementById('qr'),
-      size: 300,
-      level: 'H',
-      value: getQRText('ru')
-    });
-
-    function generateQR(code){
-      const txt = getQRText(code === 'ru' ? 'ru' : 'uz');
-      qr.set({
-        value: txt
-      });
     }
 
     // Init default
@@ -270,7 +223,6 @@
       }
     });
 
-    // Accessibility: allow print via Ctrl+P message in console
     console.log('AKSU coupon ready. To print: Ctrl/Cmd+P (select A6 or auto fit).');
   </script>
 </body>
