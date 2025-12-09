@@ -1,159 +1,277 @@
 <!doctype html>
-<html lang="uz">
+<html lang="ru">
 <head>
   <meta charset="utf-8" />
+  <title>AKSU — Купон / Kupon</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AKSU — Chegirma kuponi / АКСУ — Информация о купоне</title>
+  <!-- QR library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+
   <style>
     :root{
-      --bg:#ffffff; --text:#111;
-      --muted:#666; --accent:#7bb241;
-      --card:#fbfbfb; --maxw:900px;
+      --accent:#c42f2f;
+      --dark:#222;
+      --muted:#666;
+      --card-bg:#fff;
+      --page-width-mm:105mm; /* A6 width */
+      --page-height-mm:148mm; /* A6 height */
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      color:var(--dark);
     }
-    *{box-sizing:border-box}
-    body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; margin:0; color:var(--text); background:var(--bg); line-height:1.5}
-    .wrap{max-width:var(--maxw); margin:28px auto; padding:20px}
-    header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-    .brand{font-weight:700;font-size:18px}
-    .langswitch{display:flex;gap:8px;align-items:center}
-    .btn{background:var(--accent);color:#fff;padding:8px 10px;border-radius:8px;text-decoration:none;border:none;cursor:pointer}
-    main{margin-top:16px}
-    .card{background:var(--card);border:1px solid #eee;padding:16px;border-radius:10px}
-    h1{margin:0 0 8px;font-size:20px}
-    h2{margin:12px 0 8px;font-size:16px}
-    p{margin:8px 0}
-    ul{margin:8px 0 12px 20px}
-    .muted{color:var(--muted);font-size:14px}
-    .contact{margin-top:12px}
-    .note{background:#fff9e9;border:1px solid #ffe8b0;padding:10px;border-radius:8px;margin-top:12px}
-    footer{margin-top:18px;color:var(--muted);font-size:13px}
-    .short{font-weight:600;margin-top:8px}
-    @media (max-width:720px){
-      .langswitch{width:100%;justify-content:flex-end}
-      .brand{width:100%}
+
+    html,body{height:100%;margin:0;background:#f2f2f4;display:flex;align-items:center;justify-content:center;padding:20px;}
+    .coupon {
+      width: 100%;
+      max-width:420px;
+      background:var(--card-bg);
+      border-radius:10px;
+      box-shadow:0 6px 18px rgba(0,0,0,0.08);
+      overflow:hidden;
+      border:1px solid rgba(0,0,0,0.06);
     }
-    .lang-section{display:none}
-    .lang-section.active{display:block}
-    a.phone{color:inherit;text-decoration:none}
+
+    /* Header */
+    .coupon-header{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:18px;
+      background:linear-gradient(90deg, rgba(196,47,47,0.06), rgba(196,47,47,0.02));
+    }
+    .logo {
+      width:58px;height:58px;border-radius:6px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:18px;
+      flex:0 0 58px;
+    }
+    .title{
+      line-height:1;
+    }
+    .title h1{margin:0;font-size:16px;letter-spacing:0.2px;}
+    .title p{margin:2px 0 0 0;font-size:12px;color:var(--muted);}
+
+    /* Body */
+    .coupon-body{padding:16px;}
+    .section{margin-bottom:12px;}
+    .section h3{margin:0 0 8px 0;font-size:13px;color:var(--accent);}
+    .bullets{margin:0;padding:0 0 0 18px;color:var(--dark);font-size:13px;line-height:1.45;}
+    .muted{color:var(--muted);font-size:12px;}
+
+    /* QR & contacts */
+    .bottom{
+      display:flex;
+      gap:16px;
+      align-items:center;
+      padding:16px;
+      border-top:1px dashed rgba(0,0,0,0.06);
+      justify-content:space-between;
+    }
+    .qr-wrap{display:flex;gap:10px;align-items:center;}
+    canvas#qr{width:92px;height:92px;background:white;border-radius:6px;padding:8px;box-shadow:0 2px 6px rgba(0,0,0,0.03);}
+    .contacts{font-size:13px;color:var(--muted);line-height:1.3;}
+    .contacts a{color:var(--dark);text-decoration:none}
+
+    /* Language toggles */
+    .lang-tabs{display:flex;gap:8px;padding:10px 16px;border-bottom:1px solid rgba(0,0,0,0.03);background:#fff;}
+    .lang-tabs button{padding:8px 12px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:#fff;cursor:pointer;font-weight:600}
+    .lang-tabs button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+    /* Print styles — set page size A6 */
+    @media print{
+      body{background:transparent;padding:0}
+      .coupon{box-shadow:none;border:none;border-radius:0;width:auto;max-width:none}
+      @page{size: A6 portrait;margin:10mm}
+    }
+
+    /* Responsive */
+    @media (max-width:420px){
+      .coupon{max-width:360px}
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div class="brand">AKSU — Chegirma kuponi / АКСУ — Купон скидки</div>
-      <div class="langswitch">
-        <label><input type="radio" name="lang" value="uz" checked> O‘zbekcha</label>
-        <label style="margin-left:8px"><input type="radio" name="lang" value="ru"> Русский</label>
+  <div class="coupon" role="region" aria-label="AKSU coupon">
+    <div class="lang-tabs" role="tablist" aria-label="Language tabs">
+      <button id="tab-ru" class="active" onclick="showLang('ru')" role="tab" aria-selected="true">Рус</button>
+      <button id="tab-uz" onclick="showLang('uz')" role="tab" aria-selected="false">O‘z</button>
+    </div>
+
+    <div class="coupon-header">
+      <div class="logo">АКСУ</div>
+      <div class="title">
+        <h1 id="header-title">Добро пожаловать в рестораны AKSU!</h1>
+        <p id="header-sub">Скидка 20% — купон действует до 31.01.2026</p>
       </div>
-    </header>
+    </div>
 
-    <main>
-      <!-- UZBEK -->
-      <section id="uz" class="lang-section active">
-        <div class="card">
-          <h1>AKSU — Chegirma kuponi haqida batafsil ma’lumot</h1>
+    <!-- RU content -->
+    <div id="content-ru" class="coupon-body lang-content" lang="ru">
+      <div class="section">
+        <h3>Условия акции</h3>
+        <ul class="bullets">
+          <li>Скидка <strong>20%</strong> на заказ по меню ресторана.</li>
+          <li>Срок действия купона: <strong>до 31 января 2026 года включительно</strong>.</li>
+          <li>Купон действует во <strong>всех филиалах</strong> ресторанов AKSU.</li>
+          <li>Один купон дает право на одну скидку при расчете.</li>
+          <li>Купон не суммируется с другими акциями и специальными предложениями.</li>
+          <li>Не распространяется на заказы, оформленные через службы доставки.</li>
+          <li>Купон обменивается на скидку, не подлежит обмену на деньги и возврату.</li>
+          <li>Администрация оставляет за собой право проверять подлинность купона.</li>
+        </ul>
+      </div>
 
-          <p><strong>Chegirma:</strong> 20%<br>
-          <strong>Amal qilish muddati:</strong> 31.01.2026</p>
+      <div class="section">
+        <h3>Как воспользоваться?</h3>
+        <p class="muted">Просто предъявите этот купон официанту или на кассе до момента окончательного расчёта. После применения скидки купон будет погашен.</p>
+      </div>
 
-          <h2>Qayerda amal qiladi</h2>
-          <p>Kupon <strong>Aksu restoranlarining barcha filiallaridagi kassalarda</strong> amal qiladi.</p>
+      <div class="section">
+        <h3>В наших ресторанах вас ждут</h3>
+        <ul class="bullets">
+          <li>Авторская кухня и фирменные блюда</li>
+          <li>Свежий кофе и вкуснейшие десерты</li>
+          <li>Детское меню и игровые площадки (в отдельных филиалах)</li>
+          <li>Развлечения: боулинг в филиале «Шедевр»</li>
+        </ul>
+      </div>
 
-          <h2>Qanday ishlaydi — Aksu restorani kassalarida</h2>
-          <p class="short">Kuponni kassada ko‘rsatish kifoya — xodim chegirmani qo‘llaydi va kuponni olib qoladi.</p>
+      <div class="section muted">
+        <strong>Контакты для справок:</strong><br>
+        Call-центр (ежедневно с 10:00 до 23:00):<br>
+        <a href="tel:+998950373322">+998 95 037 33 22</a><br>
+        <a href="tel:+998712093322">+998 71 209 33 22</a><br>
+        Telegram: <a href="https://t.me/Aksu_Call_Manager" target="_blank" rel="noopener">t.me/Aksu_Call_Manager</a>
+      </div>
+    </div>
 
-          <h2>Shartlar va cheklovlar</h2>
-          <ul>
-            <li>Bitta Kupondan faqat <strong>bitta</strong> marta foydalanish mumkin.</li>
-            <li>Kupon boshqa aksiyalar bilan qo‘shib ishlatilmaydi.</li>
-            <li>Kupon naqd pulga almashtirilmaydi va qaytarilmaydi.</li>
-            <li>Yetkazib berish (delivery) va onlayn buyurtmalarda kupon amal qilmaydi.</li>
-            <li>Aksu xodimi kupon haqiqiyligini tekshirish huquqiga ega.</li>
-          </ul>
+    <!-- UZ content -->
+    <div id="content-uz" class="coupon-body lang-content" lang="uz" style="display:none">
+      <div class="section">
+        <h3>Aksiya shartlari</h3>
+        <ul class="bullets">
+          <li>Restoran menyusidan buyurtma berganingizda <strong>20% chegirma</strong>.</li>
+          <li>Kupon <strong>2026-yil 31-yanvargacha</strong> amal qiladi.</li>
+          <li>Kupon AKSU restoranlarining <strong>barcha filiallarida</strong> o‘tadi.</li>
+          <li>Bir kupon faqat bir marta chegirma olish uchun ishlatiladi.</li>
+          <li>Kupon boshqa aksiyalar va maxsus takliflar bilan birlashtirilmaydi.</li>
+          <li>Yetkazib berish xizmatlariga taalluqli emas.</li>
+          <li>Kupon to‘lov paytida chegirmaga almashtiriladi, pulga almashtirilmaydi va qaytarilmaydi.</li>
+          <li>Ma’muriyat kupon haqiqiyligini tekshirish huquqini saqlab qoladi.</li>
+        </ul>
+      </div>
 
-          <h2>Mahsulotlar va xizmatlar (umumiy)</h2>
-          <ul>
-            <li>Mazali taomlar</li>
-            <li>Qahva va shirinliklar</li>
-            <li>Fast-food menyu (Chig‘atoy filialida)</li>
-            <li>Bolalar menyusi (bolalar maydonchasi mavjud)</li>
-            <li>Bouling xizmatlari (Shedevr filialida)</li>
-          </ul>
+      <div class="section">
+        <h3>Qanday foydalanish mumkin?</h3>
+        <p class="muted">Yakuniy hisob-kitob qilishdan oldin ushbu kuponni ofitsiantga yoki kassirga ko‘rsating. Chegirma qo‘llangandan so‘ng kupon bekor qilinadi.</p>
+      </div>
 
-          <div class="contact">
-            <h2>Aloqa va yordam</h2>
-            <p class="muted">Call-center (har kuni 10:00–23:00):</p>
-            <p><a class="phone" href="tel:+998950373322">+998 95 037 33 22</a><br>
-               <a class="phone" href="tel:+998712093322">+998 71 209 33 22</a><br>
-               Telegram: <a href="https://t.me/Aksu_Call_Manager" target="_blank" rel="noopener">t.me/Aksu_Call_Manager</a></p>
-          </div>
+      <div class="section">
+        <h3>Restoranlarimizda sizni kutmoqda</h3>
+        <ul class="bullets">
+          <li>Muallif oshxonasi va maxsus taomlar</li>
+          <li>Yangi damlangan qahva va lazzatli shirinliklar</li>
+          <li>Bolalar menyusi va o‘yin maydonlari (ayrim filiallarda)</li>
+          <li>Ko‘ngilochar: "Shedevr" filialida bouling</li>
+        </ul>
+      </div>
 
-          <div class="note">
-            © Aksu — Barcha huquqlar himoyalangan / Все права защищены.
-          </div>
+      <div class="section muted">
+        <strong>Ma’lumot olish uchun aloqa:</strong><br>
+        Call-markaz (har kuni soat 10:00 dan 23:00 gacha):<br>
+        <a href="tel:+998950373322">+998 95 037 33 22</a><br>
+        <a href="tel:+998712093322">+998 71 209 33 22</a><br>
+        Telegram: <a href="https://t.me/Aksu_Call_Manager" target="_blank" rel="noopener">t.me/Aksu_Call_Manager</a>
+      </div>
+    </div>
+
+    <div class="bottom">
+      <div class="qr-wrap">
+        <canvas id="qr"></canvas>
+        <div class="muted" style="max-width:180px;font-size:12px">
+          <strong id="qr-label">Покажите QR на кассе</strong><br>
+          <span id="qr-sub" class="muted">Купон автоматически будет погашен после применения</span>
         </div>
-      </section>
+      </div>
 
-      <!-- RUSSIAN -->
-      <section id="ru" class="lang-section">
-        <div class="card">
-          <h1>АКСУ — Подробная информация о купоне</h1>
-
-          <p><strong>Скидка:</strong> 20%<br>
-          <strong>Срок действия:</strong> 31.01.2026</p>
-
-          <h2>Где действует</h2>
-          <p>Купон действует на кассах <strong>всех филиалов</strong> ресторанов Aksu.</p>
-
-          <h2>Как действует — на кассе</h2>
-          <p class="short">Достаточно показать купон на кассе — сотрудник применит скидку и заберёт купон.</p>
-
-          <h2>Условия и ограничения</h2>
-          <ul>
-            <li>С одного купона можно воспользоваться только один раз.</li>
-            <li>Купон не суммируется с другими акциями.</li>
-            <li>Обмен на наличные невозможен и возврат не производится.</li>
-            <li>Купон не действует для доставки и онлайн-заказов.</li>
-            <li>Сотрудники Aksu имеют право проверять подлинность купона.</li>
-          </ul>
-
-          <h2>Товары и услуги (в общем)</h2>
-          <ul>
-            <li>Вкусная еда</li>
-            <li>Кофе и десерты</li>
-            <li>Фастфуд (в филиале Chig'atoy)</li>
-            <li>Детское меню (есть детская площадка)</li>
-            <li>Боулинг (в филиале Shedevr)</li>
-          </ul>
-
-          <div class="contact">
-            <h2>Контакты</h2>
-            <p class="muted">Call-center (ежедневно 10:00–23:00):</p>
-            <p><a class="phone" href="tel:+998950373322">+998 95 037 33 22</a><br>
-               <a class="phone" href="tel:+998712093322">+998 71 209 33 22</a><br>
-               Telegram: <a href="https://t.me/Aksu_Call_Manager" target="_blank" rel="noopener">t.me/Aksu_Call_Manager</a></p>
-          </div>
-
-          <div class="note">
-            © Aksu — Barcha huquqlar himoyalangan / Все права защищены.
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <footer class="muted">© Aksu — Barcha huquqlar himoyalangan / Все права защищены.</footer>
+      <div class="contacts">
+        <div style="font-weight:700;color:var(--accent)">AKSU</div>
+        <div class="muted">Call-центр: <a href="tel:+998950373322">+998 95 037 33 22</a></div>
+      </div>
+    </div>
   </div>
 
   <script>
-    const radios = document.querySelectorAll('input[name="lang"]');
-    const uz = document.getElementById('uz');
-    const ru = document.getElementById('ru');
-    function setLang(v){
-      if(v==='uz'){ uz.classList.add('active'); ru.classList.remove('active'); document.documentElement.lang='uz' }
-      else { ru.classList.add('active'); uz.classList.remove('active'); document.documentElement.lang='ru' }
+    // Language toggle
+    function showLang(code){
+      document.getElementById('content-ru').style.display = code === 'ru' ? 'block' : 'none';
+      document.getElementById('content-uz').style.display = code === 'uz' ? 'block' : 'none';
+      document.getElementById('tab-ru').classList.toggle('active', code === 'ru');
+      document.getElementById('tab-uz').classList.toggle('active', code === 'uz');
+
+      // Update header text and QR label for accessibility
+      if(code === 'ru'){
+        document.getElementById('header-title').textContent = 'Добро пожаловать в рестораны AKSU!';
+        document.getElementById('header-sub').textContent = 'Скидка 20% — купон действует до 31.01.2026';
+        document.getElementById('qr-label').textContent = 'Покажите QR на кассе';
+        document.getElementById('qr-sub').textContent = 'Купон автоматически будет погашен после применения';
+      } else {
+        document.getElementById('header-title').textContent = "AKSU restoranlariga xush kelibsiz!";
+        document.getElementById('header-sub').textContent = "20% chegirma — kupon 31.01.2026 gacha amal qiladi";
+        document.getElementById('qr-label').textContent = "Kuponni kassaga ko'rsating";
+        document.getElementById('qr-sub').textContent = "Chegirma qo‘llangach, kupon bekor qilinadi";
+      }
+
+      // Regenerate QR with language-specific text
+      generateQR(code);
     }
-    radios.forEach(r=> r.addEventListener('change', e=> setLang(e.target.value)));
-    setLang(document.querySelector('input[name="lang"]:checked').value);
+
+    // Prepare vCard-like or plain text content for QR (you can customise)
+    function getQRText(lang){
+      if(lang === 'ru'){
+        return [
+          'AKSU Coupon',
+          'Скидка: 20%',
+          'Действует до: 31.01.2026',
+          'Не действует для доставки',
+          'Call: +998950373322'
+        ].join('\\n');
+      } else {
+        return [
+          'AKSU Kupon',
+          'Chegirma: 20%',
+          "Amal qilish muddati: 31.01.2026",
+          "Yetkazib berishlarga taalluqli emas",
+          'Call: +998950373322'
+        ].join('\\n');
+      }
+    }
+
+    // Initialize QR
+    const qr = new QRious({
+      element: document.getElementById('qr'),
+      size: 300,
+      level: 'H',
+      value: getQRText('ru')
+    });
+
+    function generateQR(code){
+      const txt = getQRText(code === 'ru' ? 'ru' : 'uz');
+      qr.set({
+        value: txt
+      });
+    }
+
+    // Init default
+    showLang('ru');
+
+    // Optional: keyboard shortcuts L to toggle
+    document.addEventListener('keydown', (e) => {
+      if(e.key.toLowerCase() === 'l') {
+        const ruVisible = document.getElementById('content-ru').style.display !== 'none';
+        showLang(ruVisible ? 'uz' : 'ru');
+      }
+    });
+
+    // Accessibility: allow print via Ctrl+P message in console
+    console.log('AKSU coupon ready. To print: Ctrl/Cmd+P (select A6 or auto fit).');
   </script>
 </body>
 </html>
